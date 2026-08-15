@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Comparaison PDF / HTML</title>
+<style>
+  :root { --w: 700px; }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: #222; color: #fff; font: 13px/1.4 system-ui, sans-serif; padding: 8px; }
+  .bar { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; }
+  .stage { position: relative; width: var(--w); height: calc(var(--w) * 1.41436); }
+  .stage > * { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .stage img { object-fit: fill; }
+  .stage iframe { transform-origin: 0 0; }
+  body.diff .stage iframe { mix-blend-mode: difference; }
+  body.hide-ref .stage img { visibility: hidden; }
+  body.hide-html .stage iframe { visibility: hidden; }
+  label { user-select: none; }
+</style>
+</head>
+<body class="diff">
+<div class="bar">
+  <label>page <input id="page" type="number" min="1" max="8" value="1" style="width:4em"></label>
+  <label><input id="diff" type="checkbox" checked> difference</label>
+  <label><input id="ref" type="checkbox" checked> reference PDF</label>
+  <label><input id="html" type="checkbox" checked> HTML</label>
+  <span id="info"></span>
+</div>
+<div class="stage">
+  <img id="refimg" src="ref/page-1.jpg" alt="">
+  <iframe id="frame" src="../index.html#slide-1" scrolling="no"></iframe>
+</div>
+<script>
+const W = 700, H = W * 1.41436;
+const frame = document.getElementById("frame");
+const refimg = document.getElementById("refimg");
+const pageInput = document.getElementById("page");
+
+// L'iframe rend le deck a sa largeur naturelle ; on la force a la taille de
+// reference puis on masque tout sauf la diapositive demandee.
+function sync() {
+  const n = Math.min(8, Math.max(1, +pageInput.value || 1));
+  refimg.src = `ref/page-${n}.jpg`;
+  frame.src = `../index.html?p=${n}#slide-${n}`;
+}
+frame.addEventListener("load", () => {
+  const doc = frame.contentDocument;
+  if (!doc) return;
+  const n = Math.min(8, Math.max(1, +pageInput.value || 1));
+  // Le cache du navigateur garderait sinon une version obsolete de deck.css.
+  const link = doc.querySelector('link[rel="stylesheet"]');
+  if (link) link.href = link.href.split("?")[0] + "?v=" + Date.now();
+  const style = doc.createElement("style");
+  style.textContent = `
+    body { background: #fff !important; }
+    .deck { padding: 0 !important; height: auto !important; overflow: visible !important; gap: 0 !important;
+            --slide-w: ${W}px !important; }
+    .slide { box-shadow: none !important; display: none !important; }
+    #slide-${n} { display: block !important; }
+    .deck-nav, .skip-link { display: none !important; }`;
+  doc.head.appendChild(style);
+});
+pageInput.addEventListener("input", sync);
+document.getElementById("diff").addEventListener("change", e => document.body.classList.toggle("diff", e.target.checked));
+document.getElementById("ref").addEventListener("change", e => document.body.classList.toggle("hide-ref", !e.target.checked));
+document.getElementById("html").addEventListener("change", e => document.body.classList.toggle("hide-html", !e.target.checked));
+</script>
+</body>
+</html>

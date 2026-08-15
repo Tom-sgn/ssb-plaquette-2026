@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Audit d'alignement HTML / PDF</title>
+<style>
+  body { font: 12px/1.4 ui-monospace, monospace; padding: 1rem; }
+  table { border-collapse: collapse; }
+  td, th { padding: 2px 8px; border-bottom: 1px solid #ddd; white-space: nowrap; }
+  .bad { background: #ffe3e3; }
+  .warn { background: #fff6d6; }
+  iframe { position: absolute; left: -3000px; width: 700px; height: 12000px; border: 0; }
+</style>
+</head>
+<body>
+<h1>Ecart HTML / PDF, en cqw (1 cqw = 5,955 pt)</h1>
+<p>Chaque ligne du PDF est appariee par son texte a la ligne rendue dans le
+deck. <code>dGauche</code> et <code>dLargeur</code> sont les ecarts a corriger
+(positif = le HTML est trop a droite / trop large).</p>
+<table id="out"></table>
+<iframe id="frame" src="../index.html"></iframe>
+<script src="cibles.js"></script>
+<script>
+const norm = s => s.replace(/’/g, "'").replace(/\s+/g, " ").trim().toLowerCase();
+
+document.getElementById("frame").addEventListener("load", async () => {
+  const doc = document.getElementById("frame").contentDocument;
+  await doc.fonts.ready;
+  await new Promise(r => setTimeout(r, 300));
+
+  // Une entree par ligne rendue : texte normalise + boite de la ligne.
+  const lines = [];
+  doc.querySelectorAll(".slide").forEach((slide, si) => {
+    const sr = slide.getBoundingClientRect();
+    const k = 100 / sr.width;
+    const walker = doc.createTreeWalker(slide, NodeFilter.SHOW_TEXT);
+    let node;
+    while ((node = walker.nextNode())) {
+      if (!node.textContent.trim()) continue;
+      const range = doc.createRange();
+      range.selectNodeContents(node);
+      for (const rect of range.getClientRects()) {
+        if (rect.width < 1) continue;
+        lines.push({
+          page: si + 1,
+          text: norm(node.textContent),
+          x0: +((rect.left - sr.left) * k).toFixed(2),
+          x1: +((rect.right - sr.left) * k).toFixed(2),
+          el: node.parentElement,
+        });
+      }
+    }
+  });
+
+  const rows = ['<tr><th>page</th><th>texte</th><th>classe</th><th>dGauche</th><th>dLargeur</th></tr>'];
+  const seen = new Set();
+  for (const cible of window.CIBLES) {
+    const want = norm(cible.text);
+    const hit = lines.find(l => !seen.has(l) && l.page === cible.page &&
+      (norm(l.text) === want || norm(l.text).startsWith(want) || want.startsWith(norm(l.text))));
+    if (!hit) {
+      rows.push(`<tr class="bad"><td>${cible.page}</td><td>${cible.text}</td><td colspan="3">non apparie</td></tr>`);
+      continue;
+    }
+    seen.add(hit);
+    const dL = +(hit.x0 - cible.x0).toFixed(2);
+    const dW = +((hit.x1 - hit.x0) - (cible.x1 - cible.x0)).toFixed(2);
+    const cls = Math.abs(dL) > 1.5 || Math.abs(dW) > 1.5 ? "bad" : (Math.abs(dL) > 0.6 || Math.abs(dW) > 0.6 ? "warn" : "");
+    rows.push(`<tr class="${cls}"><td>${cible.page}</td><td>${cible.text.slice(0, 46)}</td><td>${(hit.el.className || hit.el.parentElement.className).split(" ").pop()}</td><td>${dL}</td><td>${dW}</td></tr>`);
+  }
+  document.getElementById("out").innerHTML = rows.join("");
+  window.__done = true;
+});
+</script>
+</body>
+</html>

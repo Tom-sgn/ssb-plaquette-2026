@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Metriques des polices</title>
+<link rel="stylesheet" href="../assets/css/deck.css">
+<style>
+  body { background: #fff; font-family: monospace; padding: 2rem; }
+  table { border-collapse: collapse; }
+  td, th { padding: 0.25rem 0.9rem; border-bottom: 1px solid #ccc; text-align: left; }
+</style>
+</head>
+<body>
+<h1>Distance haut de boite de ligne → ligne de base (line-height: 1)</h1>
+<p>Sert a caler les blocs de texte sur les lignes de base relevees dans le PDF.
+Reporter la colonne <code>base</code> dans les jetons <code>--base-*</code> de deck.css.</p>
+<table id="out"></table>
+<script>
+const fonts = [
+  ["roboto", '700 100px "Roboto"'],
+  ["montserrat", '600 100px "Montserrat"'],
+  ["lato", '400 100px "Lato"'],
+  ["opensans", '700 100px "Open Sans"'],
+  ["bitter", 'italic 700 100px "Bitter"'],
+];
+document.fonts.ready.then(async () => {
+  await Promise.all(fonts.map(([, f]) => document.fonts.load(f, "Hg")));
+  const ctx = document.createElement("canvas").getContext("2d");
+  const rows = ['<tr><th>police</th><th>ascent</th><th>descent</th><th>base</th></tr>'];
+  const result = {};
+  for (const [name, font] of fonts) {
+    ctx.font = font;
+    const m = ctx.measureText("Hxg");
+    const asc = m.fontBoundingBoxAscent / 100;
+    const desc = m.fontBoundingBoxDescent / 100;
+    const base = (1 - asc - desc) / 2 + asc;
+    result[name] = +base.toFixed(4);
+    rows.push(`<tr><td>${name}</td><td>${asc.toFixed(4)}</td><td>${desc.toFixed(4)}</td><td><b>${base.toFixed(4)}</b></td></tr>`);
+  }
+  document.getElementById("out").innerHTML = rows.join("");
+  window.__metrics = result;
+});
+</script>
+</body>
+</html>
