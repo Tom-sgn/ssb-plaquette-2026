@@ -74,16 +74,35 @@ correspondante dans `deck.css`.
 
 ## Écarts assumés par rapport au PDF
 
+**Contenu mis à jour** (demandé par l'association, donc volontairement
+différent de la plaquette d'origine) :
+
+- Téléphone : **+33 6 51 61 18 60**.
+- Site : **sorbonnesportbusiness.com**.
+- Page Vision : le chiffre « 45k » reçoit son libellé manquant,
+  **Étudiants** (effectif de Paris 1 Panthéon-Sorbonne), et les trois couples
+  chiffre / libellé sont remis au même rythme vertical — dans la source,
+  « Diplômes Disponibles » décrochait de son « +400 ».
+
+**Corrections de coquilles de la source** :
+
+| Source | Corrigé |
+|---|---|
+| marquélesesprits | marqué les esprits |
+| carière quicompte | carrière qui compte |
+| David Trezeguet&Matias Patanian | David Trezeguet & Matias Patanian |
+| David Khan | **David Kahn** (orthographe du site de l'association) |
+| Paris BasketBall | Paris Basketball |
+| Evènements | Événements |
+| 12 Pl du Panthéon ,75005 Paris | 12 Pl du Panthéon, 75005 Paris |
+
+**Apports propres au support HTML** :
+
 - Les pictogrammes (micro, trophée, graphique, bâtiment, calendrier, poignée
   de main, LinkedIn, Instagram, contact) sont redessinés en SVG : les bitmaps
   d'origine font 63 à 90 px et ne tiennent pas l'agrandissement.
-- Coquilles de la source corrigées : « marquélesesprits » → « marqué les
-  esprits », « carière quicompte » → « carrière qui compte », espacement de
-  « David Trezeguet & Matias Patanian », et « David Khan » → **David Kahn**,
-  orthographe retenue partout sur le site de l'association.
-- Deux anomalies de la source sont **reproduites telles quelles** : le chiffre
-  « 45k » de la page Vision n'a pas de libellé, et « +400 / Diplômes
-  Disponibles » y est désaligné.
+- Email, téléphone, Instagram et site sont cliquables (`mailto:`, `tel:`,
+  liens), sans aucune différence visuelle.
 
 ## Outils de vérification
 

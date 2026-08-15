@@ -251,15 +251,6 @@ body {
 
 img { display: block; }
 
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
 .skip-link {
   position: fixed;
   top: 0.5rem;
@@ -318,19 +309,13 @@ img { display: block; }
    compensent la demi-interligne superieure dans leur propre transform. */
 .t--nowrap { white-space: nowrap; }
 
-.t--roboto { font-family: var(--title); --base: var(--base-roboto); }
-.t--ui { font-family: var(--ui); --base: var(--base-montserrat); }
-.t--num { font-family: var(--num); --base: var(--base-opensans); }
 .t--display { font-family: var(--display); font-weight: 700; font-style: italic; --base: var(--base-bitter); }
-
-.t--center { text-align: center; }
 
 .rule { position: absolute; background: var(--navy); }
 .box { position: absolute; }
 
 .ph { position: absolute; overflow: hidden; }
 .ph img { position: absolute; width: 100%; height: 100%; object-fit: cover; }
-.ph--free img { width: auto; height: auto; max-width: none; }
 
 /* --- Chrome commun aux pages interieures --------------------------------- */
 
@@ -649,7 +634,7 @@ img { display: block; }
 
 .s3__stat {
   left: 0;
-  width: 38.3cqw;
+  width: 38.4cqw;
   font-family: var(--num);
   font-weight: 700;
   font-size: 6.89cqw;
@@ -659,7 +644,7 @@ img { display: block; }
 }
 .s3__stat-label {
   left: 0;
-  width: 38.3cqw;
+  width: 38.4cqw;
   font-family: var(--num);
   font-weight: 700;
   font-size: 3.02cqw;
@@ -668,11 +653,14 @@ img { display: block; }
   --base: var(--base-opensans);
 }
 
+/* Trois couples chiffre / libelle au meme rythme. La source laissait « 45k »
+   sans libelle et « Diplomes Disponibles » decroche de son chiffre. */
 .s3__stat--a { top: 91.31cqw; }
 .s3__stat-label--a { top: 96.84cqw; }
-.s3__stat--b { top: 105.78cqw; width: 38.78cqw; }
-.s3__stat--c { top: 116.36cqw; width: 38.78cqw; }
-.s3__stat-label--c { top: 127.33cqw; width: 38.44cqw; }
+.s3__stat--b { top: 105.78cqw; }
+.s3__stat-label--b { top: 111.31cqw; }
+.s3__stat--c { top: 120.25cqw; }
+.s3__stat-label--c { top: 125.78cqw; }
 
 .s3__foot-rule { left: 10.01cqw; top: 134.88cqw; }
 .s3__foot-mark { left: 57.04cqw; top: 130.48cqw; }
@@ -1179,6 +1167,19 @@ img { display: block; }
 .s8__value--address { top: 132.01cqw; left: 3.44cqw; font-size: 2.85cqw; letter-spacing: 0.0098em; }
 .s8__label--social { top: 124.01cqw; font-size: 3.42cqw; }
 .s8__value--social { top: 132.46cqw; font-size: 3.07cqw; }
+
+.s8__value a,
+.s8__site a {
+  color: inherit;
+  text-decoration: none;
+}
+.s8__value a:hover,
+.s8__site a:hover { text-decoration: underline; }
+.s8__value a:focus-visible,
+.s8__site a:focus-visible {
+  outline: 0.3cqw solid var(--gold);
+  outline-offset: 0.3cqw;
+}
 
 .s8__site {
   left: 0;

@@ -19,9 +19,23 @@
     if (nextBtn) nextBtn.disabled = current === slides.length - 1;
   }
 
-  function go(index) {
+  // On pilote le defilement du conteneur plutot que scrollIntoView : dans un
+  // conteneur a scroll-snap obligatoire, le navigateur annule le defilement
+  // programme au profit du point d'ancrage le plus proche.
+  function offsetOf(slide) {
+    return deck.scrollTop + slide.getBoundingClientRect().top -
+      deck.getBoundingClientRect().top - (deck.clientHeight - slide.offsetHeight) / 2;
+  }
+
+  function go(index, instant) {
     var i = Math.max(0, Math.min(slides.length - 1, index));
-    slides[i].scrollIntoView({ block: "center", behavior: prefersReducedMotion() ? "auto" : "smooth" });
+    deck.scrollTo({
+      top: offsetOf(slides[i]),
+      behavior: instant || prefersReducedMotion() ? "auto" : "smooth",
+    });
+    // L'etat suit l'action immediatement ; le defilement ne fait que confirmer.
+    current = i;
+    render();
     if (history.replaceState) history.replaceState(null, "", "#" + slides[i].id);
   }
 
@@ -29,24 +43,38 @@
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
 
-  // Le slide le plus proche du centre du conteneur fait foi.
-  var observer = new IntersectionObserver(
-    function (entries) {
-      entries.forEach(function (entry) {
-        if (!entry.isIntersecting) return;
-        var index = slides.indexOf(entry.target);
-        if (index !== -1 && index !== current) {
-          current = index;
-          render();
-          if (history.replaceState) history.replaceState(null, "", "#" + entry.target.id);
-        }
-      });
-    },
-    { root: deck, threshold: 0.55 }
-  );
-  slides.forEach(function (slide) {
-    observer.observe(slide);
-  });
+  // La page courante est celle dont le centre est le plus proche du centre du
+  // conteneur. Un IntersectionObserver serait ambigu : selon la hauteur de la
+  // fenetre, deux diapositives peuvent franchir le seuil en meme temps.
+  function nearest() {
+    var deckRect = deck.getBoundingClientRect();
+    var middle = deckRect.top + deckRect.height / 2;
+    var best = 0;
+    var bestDistance = Infinity;
+    for (var i = 0; i < slides.length; i++) {
+      var rect = slides[i].getBoundingClientRect();
+      var distance = Math.abs(rect.top + rect.height / 2 - middle);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        best = i;
+      }
+    }
+    return best;
+  }
+
+  var pending = false;
+  deck.addEventListener("scroll", function () {
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(function () {
+      pending = false;
+      var index = nearest();
+      if (index === current) return;
+      current = index;
+      render();
+      if (history.replaceState) history.replaceState(null, "", "#" + slides[index].id);
+    });
+  }, { passive: true });
 
   document.addEventListener("keydown", function (event) {
     if (event.metaKey || event.ctrlKey || event.altKey) return;
@@ -84,15 +112,12 @@
   if (printBtn) printBtn.addEventListener("click", function () { window.print(); });
 
   // Ouverture directe sur une page : #slide-4
-  var hash = window.location.hash.replace("#", "");
-  if (hash) {
-    var target = document.getElementById(hash);
-    if (target && slides.indexOf(target) !== -1) {
-      current = slides.indexOf(target);
-      requestAnimationFrame(function () {
-        target.scrollIntoView({ block: "center", behavior: "auto" });
-      });
-    }
+  var target = document.getElementById(window.location.hash.replace("#", ""));
+  if (target && slides.indexOf(target) !== -1) {
+    var index = slides.indexOf(target);
+    requestAnimationFrame(function () {
+      go(index, true);
+    });
   }
 
   render();
